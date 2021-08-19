@@ -17,7 +17,3 @@ RUN apk add --no-cache \
         setcap 'cap_net_bind_service=+ep' /bin/pomerium
 
 COPY ./fs /
-
-EXPOSE 80
-
-VOLUME [ "/config" ]
