@@ -1,6 +1,6 @@
 FROM pomerium/pomerium:v0.15.0 as pomerium
 
-FROM homecentr/base:3.1.1-alpine
+FROM homecentr/base:3.1.2-alpine
 
 ENV AUTOCERT_DIR=/data/autocert
 ENV POMERIUM_ARGS='-config /config/config.yml'
