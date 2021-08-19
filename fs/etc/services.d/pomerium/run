@@ -1,0 +1,3 @@
+#!/usr/bin/with-contenv ash
+
+exec runas /bin/pomerium $POMERIUM_ARGS

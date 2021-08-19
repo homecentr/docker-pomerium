@@ -1,6 +1,64 @@
 version: "3.7"
 services:
-  $$IMAGE_NAME$$:
-    build: .
-    image: homecentr/$$IMAGE_NAME$$
-    restart: unless-stopped
+  pomerium:
+    image: homecentr/pomerium:local
+    environment:
+      PUID: 0
+      PGID: 0
+      IDP_PROVIDER_URL: "https://login.microsoftonline.com/53174009-29d5-4c20-8bd0-0e2b2b0de6a8/v2.0"
+    env_file: # Load secrets
+      - .env
+    ports:
+      - 9080:80
+      - 9443:443
+      - 9000:9000
+    networks:
+      ingress:
+        aliases:
+          - fwdauth
+    volumes:
+      - ./example/config.yml:/config/config.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pomerium.tls=true"
+      - "traefik.http.routers.pomerium.rule=Host(`auth.localhost`)"
+      - "traefik.http.routers.pomerium.entrypoints=websecure"
+      - "traefik.http.services.pomerium.loadbalancer.server.port=80"
+
+  verify:
+    image: pomerium/verify:latest
+    networks:
+      ingress:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.verify.rule=Host(`verify.localhost`)"
+      - "traefik.http.routers.verify.entrypoints=websecure"
+      - "traefik.http.routers.verify.middlewares=auth@docker"
+      - "traefik.http.routers.verify.tls=true"
+      - "traefik.http.middlewares.auth.forwardauth.authResponseHeadersRegex=.*"
+      - "traefik.http.middlewares.auth.forwardauth.address=http://fwdauth"
+      - "traefik.http.middlewares.auth.forwardauth.trustForwardHeader=true"
+      - "traefik.http.middlewares.auth.forwardauth.tls.insecureSkipVerify=true"
+      - "traefik.http.services.verify.loadbalancer.server.port=80"
+
+  traefik:
+    image: traefik:v2.5
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      ingress:
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+
+networks:
+  ingress:
+    driver: bridge
