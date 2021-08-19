@@ -1,0 +1,28 @@
+# See detailed configuration settings : https://www.pomerium.com/docs/reference/
+
+insecure_server: true
+metrics_address: ":9000"
+
+address: ":80"
+forward_auth_url: http://fwdauth
+authenticate_service_url: http://localhost
+
+idp_provider: oidc
+idp_scopes: openid email
+
+cookie_secret: "MMiSgiOqqHFlgU031+U5IWvYp+vxlY9T8+97Ydhx9Q4="
+
+routes:
+  - from: https://verify.localhost
+    to: http://verify
+    policy:
+      - allow:
+          or:
+            - email:
+                is: l.holota@outlook.com
+    pass_identity_headers: true
+
+jwt_claims_headers:
+  - email
+  - groups
+  - user
