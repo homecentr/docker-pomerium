@@ -1,4 +1,4 @@
-FROM pomerium/pomerium:v0.15.0 as pomerium
+FROM pomerium/pomerium:v0.16.4 as pomerium
 
 FROM homecentr/base:3.1.2-alpine
 
